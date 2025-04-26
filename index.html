@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Método de Burbuja (Bubble Sort)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        input, button {
+            padding: 8px 12px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        input {
+            width: 300px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 100px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .array-display {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .array-element {
+            width: 50px;
+            height: 50px;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .array-element.highlight {
+            background-color: #e74c3c;
+            transform: scale(1.1);
+        }
+        .array-element.sorted {
+            background-color: #2ecc71;
+        }
+        .steps {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        .step {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Método de Burbuja (Bubble Sort)</h1>
+        
+        <div class="input-section">
+            <label for="array-input">Ingresa números separados por comas:</label><br>
+            <input type="text" id="array-input" value="5,3,8,4,2">
+            <div>
+                <button id="sort-btn">Ordenar</button>
+                <button id="reset-btn">Reiniciar</button>
+            </div>
+        </div>
+        
+        <div class="array-display" id="array-display"></div>
+        
+        <div class="steps" id="steps"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const arrayInput = document.getElementById('array-input');
+            const sortBtn = document.getElementById('sort-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const arrayDisplay = document.getElementById('array-display');
+            const stepsContainer = document.getElementById('steps');
+            
+            let originalArray = [];
+            let currentArray = [];
+            let isSorting = false;
+            let sortingPromise = null;
+            
+            // Inicializar
+            resetArray();
+            
+            // Event listeners
+            sortBtn.addEventListener('click', startSorting);
+            resetBtn.addEventListener('click', resetArray);
+            
+            function resetArray() {
+                if (isSorting) {
+                    // Si hay una ordenación en progreso, la cancelamos
+                    isSorting = false;
+                    sortBtn.disabled = false;
+                    resetBtn.disabled = false;
+                    return;
+                }
+                
+                const inputText = arrayInput.value.trim();
+                originalArray = inputText === '' ? [] : inputText.split(',').map(num => {
+                    const parsed = parseInt(num.trim(), 10);
+                    return isNaN(parsed) ? 0 : parsed;
+                });
+                
+                // Si no hay números válidos, usar valores por defecto
+                if (originalArray.length === 0) {
+                    originalArray = [5, 3, 8, 4, 2];
+                    arrayInput.value = originalArray.join(', ');
+                }
+                
+                currentArray = [...originalArray];
+                stepsContainer.innerHTML = '';
+                renderArray();
+            }
+            
+            function renderArray(highlightIndices = [], sortedIndices = []) {
+                arrayDisplay.innerHTML = '';
+                
+                currentArray.forEach((num, index) => {
+                    const element = document.createElement('div');
+                    element.className = 'array-element';
+                    element.textContent = num;
+                    
+                    if (highlightIndices.includes(index)) {
+                        element.classList.add('highlight');
+                    }
+                    
+                    if (sortedIndices.includes(index)) {
+                        element.classList.add('sorted');
+                    }
+                    
+                    arrayDisplay.appendChild(element);
+                });
+            }
+            
+            function addStep(description) {
+                const step = document.createElement('div');
+                step.className = 'step';
+                step.textContent = description;
+                stepsContainer.appendChild(step);
+                stepsContainer.scrollTop = stepsContainer.scrollHeight;
+            }
+            
+            function startSorting() {
+                if (isSorting) return;
+                
+                isSorting = true;
+                sortBtn.disabled = true;
+                resetBtn.disabled = false; // Permitir reiniciar durante la ordenación
+                
+                currentArray = [...originalArray];
+                stepsContainer.innerHTML = '';
+                addStep('Iniciando ordenamiento por burbuja...');
+                
+                sortingPromise = bubbleSort()
+                    .finally(() => {
+                        isSorting = false;
+                        sortBtn.disabled = false;
+                    });
+            }
+            
+            async function bubbleSort() {
+                let n = currentArray.length;
+                let sortedIndices = [];
+                let swapped;
+                
+                for (let i = 0; i < n - 1 && isSorting; i++) {
+                    swapped = false;
+                    addStep(--- Pasada ${i + 1} ---);
+                    
+                    for (let j = 0; j < n - i - 1 && isSorting; j++) {
+                        // Resaltar los elementos que se están comparando
+                        renderArray([j, j + 1], sortedIndices);
+                        addStep(Comparando ${currentArray[j]} y ${currentArray[j + 1]});
+                        
+                        // Esperar un poco para visualización
+                        await sleep(800);
+                        
+                        if (!isSorting) break;
+                        
+                        if (currentArray[j] > currentArray[j + 1]) {
+                            // Intercambiar elementos
+                            [currentArray[j], currentArray[j + 1]] = [currentArray[j + 1], currentArray[j]];
+                            swapped = true;
+                            addStep(Intercambiando: ${currentArray[j]} y ${currentArray[j + 1]});
+                            
+                            // Mostrar el intercambio
+                            renderArray([j, j + 1], sortedIndices);
+                            await sleep(800);
+                        }
+                    }
+                    
+                    if (!isSorting) break;
+                    
+                    // Marcar el último elemento como ordenado
+                    sortedIndices.push(n - i - 1);
+                    renderArray([], sortedIndices);
+                    addStep(Elemento ${currentArray[n - i - 1]} en su posición final.);
+                    
+                    // Si no hubo intercambios, el array está ordenado
+                    if (!swapped) break;
+                }
+                
+                if (isSorting) {
+                    // Marcar todos los elementos restantes como ordenados
+                    for (let k = 0; k < n; k++) {
+                        if (!sortedIndices.includes(k)) {
+                            sortedIndices.push(k);
+                        }
+                    }
+                    
+                    renderArray([], sortedIndices);
+                    addStep('¡Ordenamiento completado!');
+                }
+            }
+            
+            function sleep(ms) {
+                return new Promise(resolve => {
+                    if (!isSorting) return;
+                    setTimeout(resolve, ms);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
